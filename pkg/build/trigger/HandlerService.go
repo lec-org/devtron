@@ -854,6 +854,12 @@ func (impl *HandlerServiceImpl) StartCiWorkflowAndPrepareWfRequest(trigger *type
 	workflowRequest, err := impl.buildWfRequestForCiPipeline(pipeline, trigger, ciMaterials, savedCiWf, ciWorkflowConfigNamespace, ciPipelineScripts, preCiSteps, postCiSteps, refPluginsData, isJob, scope)
 	if err != nil {
 		impl.Logger.Errorw("make workflow req", "err", err)
+		// 准备阶段也可能被来源门禁拒绝；没有创建执行器的记录必须结束，不能一直等待。
+		savedCiWf.Status = cdWorkflow.WorkflowAborted
+		savedCiWf.Message = err.Error()
+		if updateErr := impl.ciService.UpdateCiWorkflowWithStage(savedCiWf); updateErr != nil {
+			impl.Logger.Errorw("保存构建准备失败状态时出错", "workflowId", savedCiWf.Id, "err", updateErr)
+		}
 		return nil, nil, nil, err
 	}
 	err = impl.handleRuntimeParamsValidations(trigger, ciMaterials, workflowRequest)
