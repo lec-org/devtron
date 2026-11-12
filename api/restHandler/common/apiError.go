@@ -19,6 +19,7 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/devtron-labs/devtron/internal/i18n"
 	"github.com/devtron-labs/devtron/internal/util"
 	"github.com/hashicorp/go-multierror"
 	"github.com/juju/errors"
@@ -34,6 +35,9 @@ func WriteJsonResp(w http.ResponseWriter, err error, respBody interface{}, statu
 	response := Response{}
 	if err == nil {
 		response.Result = respBody
+		if message, ok := respBody.(string); ok {
+			response.Result = i18n.Translate(message)
+		}
 	} else if apiErr, ok := err.(*util.ApiError); ok {
 		response.Errors = []*util.ApiError{apiErr}
 		if apiErr.HttpStatusCode != 0 {
@@ -112,7 +116,7 @@ func WriteJsonResp(w http.ResponseWriter, err error, respBody interface{}, statu
 	response.Code = status //TODO : discuss with prashant about http status header
 	response.Status = http.StatusText(status)
 
-	b, err := json.Marshal(response)
+	b, err := i18n.MarshalResponse(response)
 	if err != nil {
 		util.GetLogger().Errorw("error in marshaling err object", "err", err)
 		status = 500
@@ -121,11 +125,11 @@ func WriteJsonResp(w http.ResponseWriter, err error, respBody interface{}, statu
 		apiErr := &util.ApiError{}
 		apiErr.Code = "0000" // 000=unknown
 		apiErr.InternalMessage = errors.Details(err)
-		apiErr.UserMessage = "response marshaling error"
+		apiErr.UserMessage = "响应数据处理失败，请重试。"
 		response.Errors = []*util.ApiError{apiErr}
 		b, err = json.Marshal(response)
 		if err != nil {
-			b = []byte("response marshaling error")
+			b = []byte("响应数据处理失败，请重试。")
 			util.GetLogger().Errorw("Unexpected error in apiError", "err", err)
 		}
 	}
@@ -133,6 +137,7 @@ func WriteJsonResp(w http.ResponseWriter, err error, respBody interface{}, statu
 		util.GetLogger().Infow("ERROR RES", "TYPE", "API-ERROR", "RES", response.Code, "err", err)
 	}
 	w.Header().Set(CONTENT_TYPE, APPLICATION_JSON)
+	w.Header().Set("Content-Language", "zh-CN")
 	w.WriteHeader(status)
 	_, err = w.Write(b)
 	if err != nil {

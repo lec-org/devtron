@@ -17,13 +17,14 @@
 package response
 
 import (
-	"encoding/json"
+	"github.com/devtron-labs/devtron/internal/i18n"
 	"github.com/devtron-labs/devtron/internal/util"
 	"net/http"
 )
 
 func WriteResponse(status int, message string, w http.ResponseWriter, err error) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Language", "zh-CN")
 	w.WriteHeader(status)
 	type Response struct {
 		Code   int              `json:"code,omitempty"`
@@ -33,8 +34,8 @@ func WriteResponse(status int, message string, w http.ResponseWriter, err error)
 	}
 	response := Response{}
 	response.Code = status
-	response.Result = message
-	b, err := json.Marshal(response)
+	response.Result = i18n.Translate(message)
+	b, err := i18n.MarshalResponse(response)
 	if err != nil {
 		b = []byte("OK")
 		util.GetLogger().Errorw("Unexpected error in apiError", "err", err)

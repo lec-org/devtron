@@ -1,4 +1,6 @@
-Note: We have restructured the readme. If you are looking for Devtron's CI/CD capabilities, please [click here](#devtron-platform)
+说明：本文介绍 Devtron 的上游能力。需要了解 CI/CD，请直接阅读[Devtron 平台](#devtron-platform)。
+
+本仓库由 `lec-org` 维护，上游为 [devtron-labs/devtron](https://github.com/devtron-labs/devtron)。当前分支已加入中文界面与接口消息支持，维护方式见[接口中文消息](internal/i18n/README.md)。下面的上游 Helm 安装命令不会自动安装本分支的中文镜像；LEC 的部署与 SSO 接入尚待实施。
 #
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=40318be7-e780-4186-8959-0078e057dddc" />
 <p align="center">
@@ -7,25 +9,25 @@ Note: We have restructured the readme. If you are looking for Devtron's CI/CD ca
   <source media="(prefers-color-scheme: light)"  srcset="./assets/devtron-lightmode-logo.png">
   <img width="333.333" height="260" src="./assets/devtron-logo-dark-light.png">
 </picture>
-<h1 align= "center">AI-Native Kubernetes Management Platform</h1>
-<p align= "center">Kubernetes is powerful but complex. Devtron unifies app and infrastructure management with an AI teammate to simplify operations and accelerate delivery.</p>
+<h1 align= "center">AI 原生 Kubernetes 管理平台</h1>
+<p align= "center">Kubernetes 功能强大，但管理复杂。Devtron 将应用和基础设施管理集中到同一平台，并通过 AI 助手简化运维、加快交付。</p>
 </p>
- 
+
 <p align="center">
 <br>
-<a href="https://docs.devtron.ai/" rel="nofollow"><strong>Explore Documentation</strong></a>
+<a href="https://docs.devtron.ai/" rel="nofollow"><strong>查看文档</strong></a>
 ·
-<a href="https://license.devtron.ai/dashboard" rel="nofollow"><strong>Try Devtron SaaS</strong></a>
+<a href="https://license.devtron.ai/dashboard" rel="nofollow"><strong>体验 Devtron SaaS</strong></a>
 <br>
 <br>
-<a href="https://devtron.ai/">Website</a>
+<a href="https://devtron.ai/">官方网站</a>
 ·
-<a href="https://devtron.ai/blog/">Blogs</a>
+<a href="https://devtron.ai/blog/">博客</a>
 ·
-<a href="https://discord.gg/jsRG5qx2gp">Join Discord channel</a>
+<a href="https://discord.gg/jsRG5qx2gp">加入 Discord 社区</a>
 .
 <a href="https://www.youtube.com/channel/UCAHRp9qp0z1y9MMtQlcFtcw">YouTube</a>
- 
+
 
 </p>
 <p align="center">
@@ -41,48 +43,48 @@ Note: We have restructured the readme. If you are looking for Devtron's CI/CD ca
 <a href="https://twitter.com/intent/tweet?text=Devtron%20helps%20in%20simplifying%20software delivery%20workflow%20for%20Kubernetes,%20check%20it%20out!!%20&hashtags=OpenSource,Kubernetes,DevOps,CICD,go&url=https://github.com/devtron-labs/devtron%0a"><img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet"></a>
 <h1></h1>
 
-Devtron's **extensible Kubernetes Dashboard** provides clear visibility into your Kubernetes clusters and streamlines Helm app management through a single, intuitive interface.<br> 
-With built-in RBAC, it ensures secure access while offering integrated insights into workloads deployed via GitOps tools like **ArgoCD** and **FluxCD** across multiple clusters. Devtron creates a centralized DevOps hub, accelerating operations by up to 20x :rocket:
+Devtron 的**可扩展 Kubernetes 控制台**通过统一界面展示集群状态，简化 Helm 应用管理。<br>
+内置 RBAC 用于控制访问权限，并集中展示通过 **ArgoCD**、**FluxCD** 等 GitOps 工具部署在不同集群中的工作负载。上游将其定位为统一的 DevOps 工作台，并宣称运维效率最高可提升 20 倍；这不是 LEC 环境的实测结果。
 
-Check out the below video to experience the full power of the **Kubernetes Dashboard**.
+通过下面的视频了解 **Kubernetes 控制台**的功能。
 
 <a href="https://youtu.be/oqCAB9b-SGQ?si=YoUJfHL43VXRU5wx">
 <br>
 <p align="center"><img src="./assets/dashboard.png"></p>
 </a>
 
-Out of the box, Devtron's Kubernetes Dashboard includes:
-- [Helm Application Management](https://docs.dashboard.devtron.ai/user-guide/helm-apps) to streamline deploying, configuration, and management of Helm apps 
-- [Resource Browser](https://docs.dashboard.devtron.ai/user-guide/resource-browser) to visualize and manage different cluster resources like Nodes, Pods, ConfigMaps, Custom Resource Definations (CRDs), etc
-- [Single Sign On (SSO)](https://docs.dashboard.devtron.ai/operator-guide/authorization/sso-login-services) to simplify onboarding and authenticating team members.
-- [Fine Grained RBAC](https://docs.dashboard.devtron.ai/operator-guide/authorization) to control the level of access users have to different Dashboard and Cluster resources.
+Devtron 的 Kubernetes 控制台提供以下基础能力：
+- [Helm 应用管理](https://docs.dashboard.devtron.ai/user-guide/helm-apps) 用于部署、配置和管理 Helm 应用
+- [资源浏览器](https://docs.dashboard.devtron.ai/user-guide/resource-browser) 用于查看和管理 Node、Pod、ConfigMap、自定义资源定义（CRD）等集群资源
+- [单点登录（SSO）](https://docs.dashboard.devtron.ai/operator-guide/authorization/sso-login-services) 用于简化团队成员的接入与认证。
+- [细粒度 RBAC](https://docs.dashboard.devtron.ai/operator-guide/authorization) 用于控制用户对不同控制台功能和集群资源的访问权限。
 
-[Devtron](#devtron-platform) helps you deploy, observe, manage & debug existing Helm apps in all your clusters.
+[Devtron](#devtron-platform) 可用于部署、观察、管理和调试各集群中已有的 Helm 应用。
 
 ---
 
-## Devtron Dashboard 
+## Devtron 控制台
 
-Devtron's Kubernetes Dashboard offers a variety of different features, giving you flexibility to manage your clusters as you desire.
+Devtron 的 Kubernetes 控制台提供多种集群管理能力，可按团队需要选用。
 
-### Features 🤩
+### 功能
 
-- Simplified configuration and management for Helm applications with easy rollback
-- Compare and reconcile configuration drifts across environments
-- Manage Helm deployments to multiple Kubernetes environments
-- A single pane of glass for Helm, ArgoCD, and FluxCD applications across multiple clusters
-- Centralized Dashboard to view and manage K8s resources across multiple clusters
-- Comprehensive SSO and RBAC to ensure secure dashboard access for team collaboration
+- 简化 Helm 应用的配置和管理，支持版本回退
+- 比较并处理不同环境之间的配置差异
+- 管理多个 Kubernetes 环境中的 Helm 部署
+- 在同一界面查看多个集群中的 Helm、ArgoCD 和 FluxCD 应用
+- 集中查看和管理多个集群中的 K8s 资源
+- 通过 SSO 与 RBAC 管理团队成员的登录和访问权限
 
-To get a more comprehensive understanding of Devtron's Kubernetes Dashboard, please visit the [documentation](https://docs.dashboard.devtron.ai/)
+完整功能介绍见[控制台文档](https://docs.dashboard.devtron.ai/)。
 
-### Installation
+### 安装
 
-Before you begin, you must create a [Kubernetes cluster](https://kubernetes.io/docs/tutorials/kubernetes-basics/create-cluster/) (preferably K8s 1.16 or higher) and install [Helm](https://helm.sh/docs/intro/install/).
+开始前，请准备 [Kubernetes 集群](https://kubernetes.io/docs/tutorials/kubernetes-basics/create-cluster/)并安装 [Helm](https://helm.sh/docs/intro/install/)。兼容版本请以当前官方安装文档为准。
 
-### Install Devtron's Kubernetes Dashboard
+### 安装 Devtron 控制台
 
-Run the following command to install the latest version of Devtron's Kubernetes Dashboard:
+使用以下上游命令安装 Devtron 控制台：
 
 ```bash
 helm repo add devtron https://helm.devtron.ai
@@ -91,124 +93,126 @@ helm install devtron devtron/devtron-operator \
 --create-namespace --namespace devtroncd
 ```
 
-### Access Devtron
+### 访问 Devtron
 
-**URL**: Use the following command to get the dashboard URL:
+**访问地址**：使用以下命令获取控制台地址：
 
 ```bash
 kubectl get svc -n devtroncd devtron-service -o jsonpath='{.status.loadBalancer.ingress}'
 ```
 
-**Credentials**:
+**登录凭据**：
 
-**UserName**:  `admin` <br>
-**Password**:   Run the following command to get the admin password for Devtron version v0.6.0 and higher
+**用户名**：  `admin` <br>
+**密码**：Devtron v0.6.0 及以上版本使用以下命令获取管理员密码：
 
 ```bash
 kubectl -n devtroncd get secret devtron-secret -o jsonpath='{.data.ADMIN_PASSWORD}' | base64 -d
 ```
 
-For Devtron version less than v0.6.0, run the following command to get the admin password:
+早于 v0.6.0 的 Devtron 版本使用以下命令获取管理员密码：
 
 ```bash
 kubectl -n devtroncd get secret devtron-secret -o jsonpath='{.data.ACD_PASSWORD}' | base64 -d
 ```
 
-Please refer to the document for more information on how to [access the Devtron Dashboard](https://docs.dashboard.devtron.ai/getting-started/install-devtron-dashboard).
+更多说明见[访问 Devtron 控制台](https://docs.dashboard.devtron.ai/getting-started/install-devtron-dashboard)。
 
 ---
 
-## Devtron Platform
+<a id="devtron-platform"></a>
 
-The Devtron Platform provides a complete solution for all DevOps requirements, helping to create a single centralized DevOps Platform for managing all applications across Kubernetes clusters. <br>
+## Devtron 平台
 
-With Devtron Platform, you can accelerate your application delivery lifecycle by leveraging advanced features like canary deployments, A/B testing, and automated rollbacks. Devtron Platform helps you achieve faster time-to-market and improved application reliability by simplifying Kubernetes operations and streamlining development workflows.
+Devtron 平台将 DevOps 相关能力集中到同一工作台，用于管理多个 Kubernetes 集群中的应用。<br>
+
+上游平台还介绍了金丝雀发布、A/B 测试、自动回退等高级能力，用于简化应用交付和 Kubernetes 运维。这些描述不代表相关功能已在 LEC 部署或启用；具体能力还需核对所使用的版本和许可。
 
 <p align="center"><img src="./assets/devtron-hero-image.webp"></p>
 
-Devtron deeply integrates with products across the lifecycle of microservices,i.e., CI, CD, security, cost, debugging, and observability via an intuitive web interface and helps you deploy, observe, manage & debug applications across all your Kubernetes clusters.
+Devtron 通过统一界面集成微服务生命周期中的 CI、CD、安全、成本、调试和可观测性工具，帮助团队管理各 Kubernetes 集群中的应用。
 
-### Devtron Integrations
+### Devtron 集成
 
-By harnessing the potential of diverse integrations, Devtron Dashboard can evolve into a robust platform, automating Kubernetes application workflows, from CI/CD pipelines to ongoing maintenance
+通过不同集成，Devtron 控制台可覆盖从 CI/CD 流水线到日常维护的 Kubernetes 应用工作流。
 
-Devtron comes with the following integrations:
+Devtron 提供以下集成：
 
-- [Build and Deploy (CI/CD)](https://docs.devtron.ai/usage/integrations/build-and-deploy-ci-cd) integration enables software development teams to automate the build and deployment process, allowing them to focus on meeting the business requirements, maintaining code quality, and ensuring security
-- [GitOps (Argo CD)](https://docs.devtron.ai/usage/integrations/argocd) integration uses ArgoCD to implement GitOps for continuous delivery with GitOps patterns
-- [Vulnerability Scanning (Clair)](https://docs.devtron.ai/usage/integrations/clair) integration enables you to scan the vulnerabilities of the images during the time of image build only.
-- [Vulnerability Scanning (Trivy)](https://docs.devtron.ai/usage/integrations/clair) integration enables you to scan the vulnerabilities of the images during the time of image build only.
-- [Notifications](https://docs.devtron.ai/usage/integrations/notifications) integration, lets you receive alerts for build and deployment pipelines on trigger, success, and failure events to your email or a Slack channel via SES and SMTP.
-- [Monitoring (Grafana)](https://docs.devtron.ai/usage/integrations/grafana) integration uses Grafana to gather application metrics like CPU, Memory utilization, Status 4xx/ 5xx/ 2xx, Throughput, and Latency.
+- [构建与部署（CI/CD）](https://docs.devtron.ai/usage/integrations/build-and-deploy-ci-cd) 用于自动构建和部署应用，让团队专注于业务需求、代码质量与安全
+- [GitOps（Argo CD）](https://docs.devtron.ai/usage/integrations/argocd) 通过 ArgoCD 实现 GitOps 持续交付
+- [漏洞扫描（Clair）](https://docs.devtron.ai/usage/integrations/clair) 用于在镜像构建阶段扫描漏洞。
+- [漏洞扫描（Trivy）](https://docs.devtron.ai/usage/integrations/clair) 用于在镜像构建阶段扫描漏洞。
+- [通知](https://docs.devtron.ai/usage/integrations/notifications) 通过 SES 或 SMTP，将流水线触发、成功和失败事件发送到邮箱或 Slack 频道。
+- [监控（Grafana）](https://docs.devtron.ai/usage/integrations/grafana) 通过 Grafana 展示 CPU、内存使用率、HTTP 状态码、吞吐量和延迟等应用指标。
 
 
-### Features 🤩
+### 功能
 
-- End-to-End CI/CD pipeline enabling a No Code software delivery workflow for Kubernetes through Helm or GitOps with ArgoCD
-- Deploy applications to multiple Kubernetes clusters on multiple cloud/on-prem from one Devtron setup
-- Robust DevSecOps implementation with battle tested tools like Trivy and Clair
-- A Single dashboard to cater to all debugging requirements for applications
-- Deployment metrics to measure the success of the agile process. It captures MTTR, change failure rate, deployment frequency, and deployment size.
+- 通过 Helm 或 ArgoCD GitOps 提供端到端 CI/CD 流水线，支持可视化配置交付流程
+- 通过一套 Devtron 向云端或自建的多个 Kubernetes 集群部署应用
+- 通过 Trivy、Clair 等工具接入 DevSecOps 安全检查
+- 在统一控制台中处理应用调试
+- 展示 MTTR、变更失败率、部署频率和部署规模等交付指标
 
-To get a more comprehensive understanding of Devtron Platform's features, please visit the [documentation](https://docs.devtron.ai/)
+完整功能介绍见[平台文档](https://docs.devtron.ai/)。
 
-### Install Devtron Platform
+### 安装 Devtron 平台
 
-Run the following command to install the latest version of the Devtron Platform:
+使用以下上游命令安装 Devtron 平台：
 
 ```bash
 helm install devtron devtron/devtron-operator --namespace devtroncd \
---set installer.modules={cicd} --set argo-cd.enabled=true \ 
+--set installer.modules={cicd} --set argo-cd.enabled=true \
 --set security.enabled=true  --set notifier.enabled=true  \
 --set security.trivy.enabled=true --set monitoring.grafana.enabled=true
 ```
 
 ---
 
-## Core Tools and Technologies
- 
-Here are the components that Devtron uses internally as part of its own architecture:
+## 核心工具与技术
 
-| Logo     | Tool     | Purpose    | GitHub Repository   | License |
+Devtron 的架构包含以下组件：
+
+| 图标 | 工具 | 用途 | GitHub 仓库 | 许可证 |
 | -------- | -------- | ---------- | ------------------- | ------- |
-| <img src="./assets/readme-logos/kubernetes.jpg" width="64px"> | **Kubernetes** | Core orchestration platform managing deployments, scaling, and container lifecycle automation.                                                                         | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | [Apache License 2.0](https://github.com/kubernetes/kubernetes/blob/master/LICENSE) |
-| <img src="./assets/readme-logos/golang.jpg" width="64px">     | **Golang**     | Backend language powering high-performance, scalable Devtron core services.                                                                           | [golang/go](https://github.com/golang/go)                         | [BSD 3-Clause License](https://github.com/golang/go/blob/master/LICENSE)           |
-| <img src="./assets/readme-logos/helm.jpg" width="64px">       | **Helm**       | Manages Kubernetes application packaging, versioning, and consistent deployment workflows.                                                                                           | [helm/helm](https://github.com/helm/helm)                         | [Apache License 2.0](https://github.com/helm/helm/blob/main/LICENSE)               |
-| <img src="./assets/readme-logos/trivy.jpg" width="64px">      | **Trivy**      | Ensures security by scanning vulnerabilities, misconfigurations, secrets, and SBOMs. | [aquasecurity/trivy](https://github.com/aquasecurity/trivy)       | [Apache License 2.0](https://github.com/aquasecurity/trivy/blob/main/LICENSE)      |
-| <img src="./assets/readme-logos/nats.jpg" width="64px">       | **NATS**       | Enables reliable, high-speed messaging between Devtron microservices and workflows.                                                     | [nats-io/nats-server](https://github.com/nats-io/nats-server)     | [Apache License 2.0](https://github.com/nats-io/nats-server/blob/main/LICENSE)     |
-| <img src="./assets/readme-logos/dex.jpg" width="64px">        | **Dex**        | Provides secure SSO integration with enterprise identity providers.                                                                       | [dexidp/dex](https://github.com/dexidp/dex)                       | [Apache License 2.0](https://github.com/dexidp/dex/blob/master/LICENSE)              |
-| <img src="./assets/readme-logos/casbin.jpg" width="64px">     | **Casbin**     | Enforces fine-grained RBAC policies for secure user authorization.                                                                             | [casbin/casbin](https://github.com/casbin/casbin)                 | [Apache License 2.0](https://github.com/casbin/casbin/blob/master/LICENSE)         |
+| <img src="./assets/readme-logos/kubernetes.jpg" width="64px"> | **Kubernetes** | 容器编排平台，管理部署、扩缩容和容器生命周期。                                                                         | [kubernetes/kubernetes](https://github.com/kubernetes/kubernetes) | [Apache License 2.0](https://github.com/kubernetes/kubernetes/blob/master/LICENSE) |
+| <img src="./assets/readme-logos/golang.jpg" width="64px">     | **Golang**     | Devtron 核心服务使用的后端语言。                                                                           | [golang/go](https://github.com/golang/go)                         | [BSD 3-Clause License](https://github.com/golang/go/blob/master/LICENSE)           |
+| <img src="./assets/readme-logos/helm.jpg" width="64px">       | **Helm**       | 管理 Kubernetes 应用打包、版本和部署流程。                                                                                           | [helm/helm](https://github.com/helm/helm)                         | [Apache License 2.0](https://github.com/helm/helm/blob/main/LICENSE)               |
+| <img src="./assets/readme-logos/trivy.jpg" width="64px">      | **Trivy**      | 扫描漏洞、错误配置、敏感信息及 SBOM。 | [aquasecurity/trivy](https://github.com/aquasecurity/trivy)       | [Apache License 2.0](https://github.com/aquasecurity/trivy/blob/main/LICENSE)      |
+| <img src="./assets/readme-logos/nats.jpg" width="64px">       | **NATS**       | 为 Devtron 微服务和工作流提供可靠消息传输。                                                     | [nats-io/nats-server](https://github.com/nats-io/nats-server)     | [Apache License 2.0](https://github.com/nats-io/nats-server/blob/main/LICENSE)     |
+| <img src="./assets/readme-logos/dex.jpg" width="64px">        | **Dex**        | 对接身份提供方，提供 SSO 认证。                                                                       | [dexidp/dex](https://github.com/dexidp/dex)                       | [Apache License 2.0](https://github.com/dexidp/dex/blob/master/LICENSE)              |
+| <img src="./assets/readme-logos/casbin.jpg" width="64px">     | **Casbin**     | 执行细粒度 RBAC 授权策略。                                                                             | [casbin/casbin](https://github.com/casbin/casbin)                 | [Apache License 2.0](https://github.com/casbin/casbin/blob/master/LICENSE)         |
 
 
 ---
 
-## Optional Components
+## 可选组件
 
-Here are some of the optional components that Devtron supports:
+Devtron 支持以下可选组件：
 
-| Logo     | Tool     | Purpose    | GitHub Repository   | License |
+| 图标 | 工具 | 用途 | GitHub 仓库 | 许可证 |
 | -------- | -------- | ---------- | ------------------- | ------- |
-| <img src="./assets/readme-logos/argo.jpg" width="64px">                 | **Argo CD / Argo Workflows**       | Enables GitOps-based deployments and workflow automation within Devtron          | [argoproj/argo-cd](https://github.com/argoproj/argo-cd)                   | [Apache License 2.0](https://github.com/argoproj/argo-cd/blob/master/LICENSE)       |
-| <img src="./assets/readme-logos/clair.jpg" width="64px">                | **Clair**                          | Scans container images for known security vulnerabilities                    | [quay/clair](https://github.com/quay/clair)                               | [Apache License 2.0](https://github.com/quay/clair/blob/main/LICENSE)                 |
-| <img src="./assets/readme-logos/keda.jpg" width="64px">                 | **KEDA**                           | Enables event-driven autoscaling for Kubernetes applications                       | [kedacore/keda](https://github.com/kedacore/keda)                         | [Apache License 2.0](https://github.com/kedacore/keda/blob/main/LICENSE)            |
-| <img src="./assets/readme-logos/k8s_external_secrets.jpg" width="64px"> | **Kubernetes External Secrets**    | Syncs external secrets securely into Kubernetes clusters                           | [external-secrets/external-secrets](https://github.com/external-secrets/external-secrets) | [Apache License 2.0](https://github.com/external-secrets/external-secrets/blob/main/LICENSE) |
-| <img src="./assets/readme-logos/prometheus.jpg" width="64px">           | **Prometheus**                     | Collects metrics for monitoring, alerting, and performance insights               | [prometheus/prometheus](https://github.com/prometheus/prometheus)         | [Apache License 2.0](https://github.com/prometheus/prometheus/blob/main/LICENSE)      |
+| <img src="./assets/readme-logos/argo.jpg" width="64px">                 | **Argo CD / Argo Workflows**       | 提供 GitOps 部署和工作流自动化          | [argoproj/argo-cd](https://github.com/argoproj/argo-cd)                   | [Apache License 2.0](https://github.com/argoproj/argo-cd/blob/master/LICENSE)       |
+| <img src="./assets/readme-logos/clair.jpg" width="64px">                | **Clair**                          | 扫描容器镜像中的已知漏洞                    | [quay/clair](https://github.com/quay/clair)                               | [Apache License 2.0](https://github.com/quay/clair/blob/main/LICENSE)                 |
+| <img src="./assets/readme-logos/keda.jpg" width="64px">                 | **KEDA**                           | 为 Kubernetes 应用提供事件驱动的自动扩缩容                       | [kedacore/keda](https://github.com/kedacore/keda)                         | [Apache License 2.0](https://github.com/kedacore/keda/blob/main/LICENSE)            |
+| <img src="./assets/readme-logos/k8s_external_secrets.jpg" width="64px"> | **Kubernetes External Secrets**    | 将外部密钥安全地同步到 Kubernetes 集群                           | [external-secrets/external-secrets](https://github.com/external-secrets/external-secrets) | [Apache License 2.0](https://github.com/external-secrets/external-secrets/blob/main/LICENSE) |
+| <img src="./assets/readme-logos/prometheus.jpg" width="64px">           | **Prometheus**                     | 采集指标，用于监控、告警和性能分析               | [prometheus/prometheus](https://github.com/prometheus/prometheus)         | [Apache License 2.0](https://github.com/prometheus/prometheus/blob/main/LICENSE)      |
 
 ---
 
-## :question: FAQs & Troubleshooting
- 
-- For troubleshooting Devtron please [refer to this docs page](https://docs.devtron.ai/resources/devtron-troubleshoot)
- 
-## :busts_in_silhouette: Community
- 
-Get updates on Devtron's development and chat with project maintainers, contributors, and community members
-- Follow [@DevtronL on Twitter](https://twitter.com/DevtronL)
-- Raise feature requests, suggest enhancements, and report bugs in our [GitHub Issues](https://github.com/devtron-labs/devtron/issues)
-- Articles, Howtos, Tutorials - [Devtron Blogs](https://devtron.ai/blog/)
-- Devtron is trusted by communities all across the globe. The list of organizations using Devtron can be found [here](./USERS.md).
- 
-### Join us at Discord channel
+## :question: 常见问题与故障排查
+
+- 排查 Devtron 故障时，请[参阅此文档](https://docs.devtron.ai/resources/devtron-troubleshoot)
+
+## :busts_in_silhouette: 社区
+
+了解 Devtron 的开发进展，与项目维护者、贡献者和社区成员交流：
+- 关注 [Twitter 上的 @DevtronL](https://twitter.com/DevtronL)
+- 通过 [GitHub Issues] 提出功能建议、改进意见或报告缺陷(https://github.com/devtron-labs/devtron/issues)
+- 文章、操作指南和教程见 [Devtron 博客](https://devtron.ai/blog/)
+- Devtron 在多个社区中得到使用，组织名单见[使用者清单](./USERS.md)。
+
+### 加入 Discord 社区
 <p>
 <a href="https://discord.gg/jsRG5qx2gp">
    <img
@@ -220,28 +224,28 @@ Get updates on Devtron's development and chat with project maintainers, contribu
 
 ---
 
-## :handshake: Contribute
- 
-Check out our [contributing guidelines](CONTRIBUTING.md). Included, are directions for opening issues, coding standards, and notes on our development processes. We deeply appreciate your contribution.
- 
-Please look at our [community contributions](COMMUNITY_CONTRIBUTIONS.md) and feel free to create a video or blog around Devtron and add your valuable contribution to the list.
- 
-### Contributors:
- 
-We are deeply grateful to all our amazing contributors!
- 
+## :handshake: 参与贡献
+
+请先阅读[贡献指南](CONTRIBUTING.md)，了解问题反馈方式、代码规范和开发流程。感谢你的贡献。
+
+欢迎查看[社区贡献](COMMUNITY_CONTRIBUTIONS.md)，也欢迎制作 Devtron 视频或文章并加入清单。
+
+### 贡献者
+
+感谢所有贡献者的参与！
+
 <a href="https://github.com/devtron-labs/devtron/graphs/contributors">
  <img src="https://contrib.rocks/image?repo=devtron-labs/devtron" />
 </a>
 
 ---
- 
-## :bug: Vulnerability Reporting
- 
-We at Devtron, take security and our users' trust very seriously. If you believe you have found a security issue, please report it to <b>security@devtron.ai</b>.
+
+## :bug: 漏洞报告
+
+Devtron 重视安全和用户信任。如果发现安全问题，请发送到 <b>security@devtron.ai</b>。
 
 ---
- 
-## :bookmark: License
- 
-Devtron is licensed under [Apache License, Version 2.0](LICENSE)
+
+## :bookmark: 许可证
+
+Devtron 使用 [Apache License 2.0](LICENSE) 许可证。

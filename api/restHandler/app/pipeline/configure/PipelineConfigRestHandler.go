@@ -513,7 +513,7 @@ func (handler *PipelineConfigRestHandlerImpl) FindAppsByTeamName(w http.Response
 func (handler *PipelineConfigRestHandlerImpl) streamOutput(w http.ResponseWriter, reader *bufio.Reader, lastSeenMsgId int) {
 	f, ok := w.(http.Flusher)
 	if !ok {
-		http.Error(w, "unexpected server doesnt support streaming", http.StatusInternalServerError)
+		http.Error(w, "服务端不支持流式传输", http.StatusInternalServerError)
 	}
 
 	// Important to make it work in browsers

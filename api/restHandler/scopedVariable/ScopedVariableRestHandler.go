@@ -188,12 +188,12 @@ func (handler *ScopedVariableRestHandlerImpl) GetScopedVariables(w http.Response
 	scopeQueryParam := r.URL.Query().Get("scope")
 	if scopeQueryParam != "" {
 		if err := json.Unmarshal([]byte(scopeQueryParam), &scope); err != nil {
-			http.Error(w, "Invalid JSON format for 'scope' parameter", http.StatusBadRequest)
+			http.Error(w, "scope 参数的 JSON 格式无效", http.StatusBadRequest)
 			return
 		}
 	}
 	if scope.AppId != 0 && scope.AppId != appId {
-		http.Error(w, "scope.AppId provided in scope is not equal to appId", http.StatusBadRequest)
+		http.Error(w, "scope.AppId 与 appId 不一致", http.StatusBadRequest)
 		return
 	}
 
