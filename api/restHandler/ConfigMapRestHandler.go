@@ -108,12 +108,12 @@ func (handler ConfigMapRestHandlerImpl) CMGlobalAddUpdate(w http.ResponseWriter,
 
 	err = decoder.Decode(&configMapRequest)
 	if err != nil {
-		handler.Logger.Errorw("request err, CMGlobalAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("request err, CMGlobalAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	configMapRequest.UserId = userId
-	handler.Logger.Errorw("request payload, CMGlobalAddUpdate", "payload", configMapRequest)
+	handler.Logger.Errorw("request payload, CMGlobalAddUpdate", "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 
 	//RBAC START
 	token := r.Header.Get("token")
@@ -129,7 +129,7 @@ func (handler ConfigMapRestHandlerImpl) CMGlobalAddUpdate(w http.ResponseWriter,
 	userMetadata := util.GetUserMetadata(r.Context(), userId, isSuperAdmin)
 	res, err := handler.draftAwareResourceService.CMGlobalAddUpdate(ctx, &configMapRequest, userMetadata)
 	if err != nil {
-		handler.Logger.Errorw("service err, CMGlobalAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("service err, CMGlobalAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -146,12 +146,12 @@ func (handler ConfigMapRestHandlerImpl) CMEnvironmentAddUpdate(w http.ResponseWr
 	var configMapRequest bean.ConfigDataRequest
 	err = decoder.Decode(&configMapRequest)
 	if err != nil {
-		handler.Logger.Errorw("request err, CMEnvironmentAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("request err, CMEnvironmentAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	configMapRequest.UserId = userId
-	handler.Logger.Errorw("request payload, CMEnvironmentAddUpdate", "payload", configMapRequest)
+	handler.Logger.Errorw("request payload, CMEnvironmentAddUpdate", "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 
 	//RBAC START
 	token := r.Header.Get("token")
@@ -175,7 +175,7 @@ func (handler ConfigMapRestHandlerImpl) CMEnvironmentAddUpdate(w http.ResponseWr
 	userMetadata := util.GetUserMetadata(r.Context(), userId, isSuperAdmin)
 	res, err := handler.draftAwareResourceService.CMEnvironmentAddUpdate(ctx, &configMapRequest, userMetadata)
 	if err != nil {
-		handler.Logger.Errorw("service err, CMEnvironmentAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("service err, CMEnvironmentAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -353,12 +353,12 @@ func (handler ConfigMapRestHandlerImpl) CSGlobalAddUpdate(w http.ResponseWriter,
 
 	err = decoder.Decode(&configMapRequest)
 	if err != nil {
-		handler.Logger.Errorw("request err, CSGlobalAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("request err, CSGlobalAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	configMapRequest.UserId = userId
-	handler.Logger.Errorw("request payload, CSGlobalAddUpdate", "payload", configMapRequest)
+	handler.Logger.Errorw("request payload, CSGlobalAddUpdate", "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 
 	//RBAC START
 	token := r.Header.Get("token")
@@ -374,7 +374,7 @@ func (handler ConfigMapRestHandlerImpl) CSGlobalAddUpdate(w http.ResponseWriter,
 	userMetadata := util.GetUserMetadata(r.Context(), userId, isSuperAdmin)
 	res, err := handler.draftAwareResourceService.CSGlobalAddUpdate(ctx, &configMapRequest, userMetadata)
 	if err != nil {
-		handler.Logger.Errorw("service err, CSGlobalAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("service err, CSGlobalAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -392,12 +392,12 @@ func (handler ConfigMapRestHandlerImpl) CSEnvironmentAddUpdate(w http.ResponseWr
 
 	err = decoder.Decode(&configMapRequest)
 	if err != nil {
-		handler.Logger.Errorw("request err, CSEnvironmentAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("request err, CSEnvironmentAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	configMapRequest.UserId = userId
-	handler.Logger.Errorw("request payload, CSEnvironmentAddUpdate", "payload", configMapRequest)
+	handler.Logger.Errorw("request payload, CSEnvironmentAddUpdate", "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 
 	//RBAC START
 	token := r.Header.Get("token")
@@ -421,7 +421,7 @@ func (handler ConfigMapRestHandlerImpl) CSEnvironmentAddUpdate(w http.ResponseWr
 	userMetadata := util.GetUserMetadata(r.Context(), userId, isSuperAdmin)
 	res, err := handler.draftAwareResourceService.CSEnvironmentAddUpdate(ctx, &configMapRequest, userMetadata)
 	if err != nil {
-		handler.Logger.Errorw("service err, CSEnvironmentAddUpdate", "err", err, "payload", configMapRequest)
+		handler.Logger.Errorw("service err, CSEnvironmentAddUpdate", "err", err, "appId", configMapRequest.AppId, "environmentId", configMapRequest.EnvironmentId)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -851,23 +851,23 @@ func (handler ConfigMapRestHandlerImpl) ConfigSecretBulkPatch(w http.ResponseWri
 	var bulkPatchRequest bean.BulkPatchRequest
 	err = decoder.Decode(&bulkPatchRequest)
 	if err != nil {
-		handler.Logger.Errorw("request err, ConfigSecretBulkPatch", "err", err, "payload", bulkPatchRequest)
+		handler.Logger.Errorw("request err, ConfigSecretBulkPatch", "err", err, "patchCount", len(bulkPatchRequest.Payload))
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
-	handler.Logger.Infow("request payload, ConfigSecretBulkPatch", "payload", bulkPatchRequest)
+	handler.Logger.Infow("request payload, ConfigSecretBulkPatch", "patchCount", len(bulkPatchRequest.Payload))
 	bulkPatchRequest.UserId = userId
 	if bulkPatchRequest.Global {
 		_, err := handler.configMapService.ConfigSecretGlobalBulkPatch(&bulkPatchRequest)
 		if err != nil {
-			handler.Logger.Errorw("service err, ConfigSecretBulkPatch", "err", err, "payload", bulkPatchRequest)
+			handler.Logger.Errorw("service err, ConfigSecretBulkPatch", "err", err, "patchCount", len(bulkPatchRequest.Payload))
 			common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 			return
 		}
 	} else {
 		_, err := handler.configMapService.ConfigSecretEnvironmentBulkPatch(&bulkPatchRequest)
 		if err != nil {
-			handler.Logger.Errorw("service err, ConfigSecretBulkPatch", "err", err, "payload", bulkPatchRequest)
+			handler.Logger.Errorw("service err, ConfigSecretBulkPatch", "err", err, "patchCount", len(bulkPatchRequest.Payload))
 			common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 			return
 		}
