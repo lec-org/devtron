@@ -318,7 +318,7 @@ func (impl DockerRegistryConfigImpl) CreateArgoRepositorySecretForRepositories(a
 
 // Create Takes the DockerArtifactStoreBean and creates the record in DB. Returns Error if any
 func (impl DockerRegistryConfigImpl) Create(bean *types.DockerArtifactStoreBean) (*types.DockerArtifactStoreBean, error) {
-	impl.logger.Debugw("docker registry create request", "request", bean)
+	impl.logger.Debugw("docker registry create request", "registryId", bean.Id)
 
 	// 1- initiate DB transaction
 	dbConnection := impl.dockerArtifactStoreRepository.GetConnection()
@@ -334,7 +334,7 @@ func (impl DockerRegistryConfigImpl) Create(bean *types.DockerArtifactStoreBean)
 	store := NewDockerArtifactStore(bean, true, time.Now(), time.Now(), bean.User, bean.User)
 	err = impl.dockerArtifactStoreRepository.Save(store, tx)
 	if err != nil {
-		impl.logger.Errorw("error in saving registry config", "config", store, "err", err)
+		impl.logger.Errorw("error in saving registry config", "registryId", store.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.DockerRegCreateFailedInDb,
 			InternalMessage: "docker registry failed to create in db",
@@ -342,7 +342,7 @@ func (impl DockerRegistryConfigImpl) Create(bean *types.DockerArtifactStoreBean)
 		}
 		return nil, err
 	}
-	impl.logger.Infow("created repository ", "repository", store)
+	impl.logger.Infow("created repository ", "registryId", store.Id)
 	bean.Id = store.Id
 
 	// 3- insert OCIRegistryConfig for this docker registry
@@ -517,7 +517,7 @@ func (impl DockerRegistryConfigImpl) FetchOneDockerAccount(storeId string) (*typ
 
 // Update will update the existing registry with the given DockerArtifactStoreBean
 func (impl DockerRegistryConfigImpl) Update(bean *types.DockerArtifactStoreBean) (*types.DockerArtifactStoreBean, error) {
-	impl.logger.Debugw("docker registry update request", "request", bean)
+	impl.logger.Debugw("docker registry update request", "registryId", bean.Id)
 
 	// 1- find by id, if err - return error
 	existingStore, err := impl.dockerArtifactStoreRepository.FindOne(bean.Id)
@@ -587,7 +587,7 @@ func (impl DockerRegistryConfigImpl) Update(bean *types.DockerArtifactStoreBean)
 	}
 	err = impl.dockerArtifactStoreRepository.Update(store, tx)
 	if err != nil {
-		impl.logger.Errorw("error in updating registry config in db", "config", store, "err", err)
+		impl.logger.Errorw("error in updating registry config in db", "registryId", store.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.DockerRegUpdateFailedInDb,
 			InternalMessage: "docker registry failed to update in db",
@@ -595,7 +595,7 @@ func (impl DockerRegistryConfigImpl) Update(bean *types.DockerArtifactStoreBean)
 		}
 		return nil, err
 	}
-	impl.logger.Infow("updated repository ", "repository", store)
+	impl.logger.Infow("updated repository ", "registryId", store.Id)
 	bean.Id = store.Id
 
 	// 4- update OCIRegistryConfig for this docker registry
@@ -712,7 +712,7 @@ func (impl DockerRegistryConfigImpl) createDockerIpConfig(tx *pg.Tx, ipsConfig *
 
 // UpdateInactive will update the existing soft deleted registry with the given DockerArtifactStoreBean instead of creating one
 func (impl DockerRegistryConfigImpl) UpdateInactive(bean *types.DockerArtifactStoreBean) (*types.DockerArtifactStoreBean, error) {
-	impl.logger.Debugw("docker registry update request", "request", bean)
+	impl.logger.Debugw("docker registry update request", "registryId", bean.Id)
 
 	// 1- find by id, if err - return error
 	existingStore, err0 := impl.dockerArtifactStoreRepository.FindOneInactive(bean.Id)
@@ -739,7 +739,7 @@ func (impl DockerRegistryConfigImpl) UpdateInactive(bean *types.DockerArtifactSt
 
 	err = impl.dockerArtifactStoreRepository.Update(store, tx)
 	if err != nil {
-		impl.logger.Errorw("error in updating registry config in db", "config", store, "err", err)
+		impl.logger.Errorw("error in updating registry config in db", "registryId", store.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.DockerRegUpdateFailedInDb,
 			InternalMessage: "docker registry failed to update in db",
@@ -747,7 +747,7 @@ func (impl DockerRegistryConfigImpl) UpdateInactive(bean *types.DockerArtifactSt
 		}
 		return nil, err
 	}
-	impl.logger.Infow("updated repository ", "repository", store)
+	impl.logger.Infow("updated repository ", "registryId", store.Id)
 	bean.Id = store.Id
 
 	// 4- update OCIRegistryConfig for this docker registry

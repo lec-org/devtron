@@ -29,6 +29,7 @@ type UserRole struct {
 }
 
 type UserInfo struct {
+	DisplayName   string          `json:"displayName,omitempty"`
 	Id            int32           `json:"id" validate:"number,not-system-admin-userid"`
 	EmailId       string          `json:"email_id" validate:"required,not-system-admin-user"` // TODO : have to migrate json key to emailId and also handle backward compatibility
 	Roles         []string        `json:"roles,omitempty"`

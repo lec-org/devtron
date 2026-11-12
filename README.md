@@ -1,6 +1,6 @@
 说明：本文介绍 Devtron 的上游能力。需要了解 CI/CD，请直接阅读[Devtron 平台](#devtron-platform)。
 
-本仓库由 `lec-org` 维护，上游为 [devtron-labs/devtron](https://github.com/devtron-labs/devtron)。当前分支已加入中文界面与接口消息支持，维护方式见[接口中文消息](internal/i18n/README.md)。下面的上游 Helm 安装命令不会自动安装本分支的中文镜像；LEC 的部署与 SSO 接入尚待实施。
+本仓库由 `lec-org` 维护，上游为 [devtron-labs/devtron](https://github.com/devtron-labs/devtron)。当前分支包含中文消息、LecSSO 登录与组织 GitHub App 接入，见 [LEC 接入说明](docs/lec-integration.md)与[接口中文消息](internal/i18n/README.md)。下面的上游 Helm 安装命令不会自动安装本分支的镜像；部署时需显式替换后端和控制台镜像。
 #
 <img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=40318be7-e780-4186-8959-0078e057dddc" />
 <p align="center">

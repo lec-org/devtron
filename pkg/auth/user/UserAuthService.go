@@ -496,7 +496,7 @@ func (impl UserAuthServiceImpl) AuthVerification(r *http.Request) (bool, string,
 	if strings.HasPrefix(emailId, userBean.API_TOKEN_USER_EMAIL_PREFIX) && len(version) > 0 {
 		err := impl.userService.CheckIfTokenIsValid(emailId, version)
 		if err != nil {
-			impl.logger.Errorw("token is not valid", "error", err, "token", token)
+			impl.logger.Errorw("token is not valid", "error", err)
 			return false, "", err
 		}
 	}

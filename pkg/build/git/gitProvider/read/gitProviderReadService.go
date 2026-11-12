@@ -4,6 +4,7 @@ import (
 	"github.com/devtron-labs/devtron/pkg/build/git/gitProvider/adapter"
 	bean2 "github.com/devtron-labs/devtron/pkg/build/git/gitProvider/bean"
 	"github.com/devtron-labs/devtron/pkg/build/git/gitProvider/repository"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"go.uber.org/zap"
 )
 
@@ -66,7 +67,7 @@ func (impl *GitProviderReadServiceImpl) FetchOneGitProvider(providerId string) (
 		return nil, err
 	}
 
-	providerRes := adapter.ConvertGitRegistryDtoToBean(provider, true)
+	providerRes := adapter.ConvertGitRegistryDtoToBean(provider, provider.Name != lec.GitHubProviderName)
 	return &providerRes, err
 }
 func (impl *GitProviderReadServiceImpl) FindByUrl(url string) (*bean2.GitRegistry, error) {
@@ -75,6 +76,6 @@ func (impl *GitProviderReadServiceImpl) FindByUrl(url string) (*bean2.GitRegistr
 		impl.logger.Errorw("error in FindByUrl", "url", url, "err", err)
 		return nil, err
 	}
-	gitRegistryBean := adapter.ConvertGitRegistryDtoToBean(provider, true)
+	gitRegistryBean := adapter.ConvertGitRegistryDtoToBean(provider, provider.Name != lec.GitHubProviderName)
 	return &gitRegistryBean, nil
 }

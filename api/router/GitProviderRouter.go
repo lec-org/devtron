@@ -32,6 +32,7 @@ func NewGitProviderRouterImpl(gitRestHandler restHandler.GitProviderRestHandler)
 	return &GitProviderRouterImpl{gitRestHandler: gitRestHandler}
 }
 func (impl GitProviderRouterImpl) InitGitProviderRouter(configRouter *mux.Router) {
+	configRouter.Path("/lec/repositories").HandlerFunc(impl.gitRestHandler.LecRepositories).Methods("GET")
 	configRouter.Path("/provider").
 		HandlerFunc(impl.gitRestHandler.SaveGitRepoConfig).
 		Methods("POST")

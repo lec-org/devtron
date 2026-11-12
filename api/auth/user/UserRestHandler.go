@@ -50,6 +50,7 @@ var gitOpsAccessResultKeyByResource = map[string]string{
 }
 
 type UserRestHandler interface {
+	LecMembers(w http.ResponseWriter, r *http.Request)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	UpdateUser(w http.ResponseWriter, r *http.Request)
 	GetById(w http.ResponseWriter, r *http.Request)
@@ -280,6 +281,7 @@ func (handler UserRestHandlerImpl) GetAllV2(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	handler.fillMemberNames(r, res.Users)
 	common.WriteJsonResp(w, err, res, http.StatusOK)
 }
 

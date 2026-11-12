@@ -19,8 +19,11 @@ package sso
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/devtron-labs/devtron/internal/util"
 	globalConfig "github.com/devtron-labs/devtron/pkg/auth/authorisation/globalConfig"
 	"github.com/devtron-labs/devtron/pkg/auth/user/bean"
+	"github.com/devtron-labs/devtron/pkg/lec"
+	"net/http"
 	"time"
 
 	"github.com/devtron-labs/common-lib/utils/k8s"
@@ -115,6 +118,12 @@ func NewSSOLoginServiceImpl(
 }
 
 func (impl SSOLoginServiceImpl) CreateSSOLogin(request *bean.SSOLoginDto) (*bean.SSOLoginDto, error) {
+	if identity, err := lec.DefaultIdentity(); err != nil {
+		return nil, err
+	} else if identity != nil {
+		return nil, &util.ApiError{HttpStatusCode: http.StatusConflict, UserMessage: "LecSSO 配置由平台管理员统一维护"}
+	}
+
 	dbConnection := impl.ssoLoginRepository.GetConnection()
 	tx, err := dbConnection.Begin()
 	if err != nil {
@@ -188,6 +197,12 @@ func (impl SSOLoginServiceImpl) CreateSSOLogin(request *bean.SSOLoginDto) (*bean
 }
 
 func (impl SSOLoginServiceImpl) UpdateSSOLogin(request *bean.SSOLoginDto) (*bean.SSOLoginDto, error) {
+	if identity, err := lec.DefaultIdentity(); err != nil {
+		return nil, err
+	} else if identity != nil {
+		return nil, &util.ApiError{HttpStatusCode: http.StatusConflict, UserMessage: "LecSSO 配置由平台管理员统一维护"}
+	}
+
 	dbConnection := impl.ssoLoginRepository.GetConnection()
 	tx, err := dbConnection.Begin()
 	if err != nil {
@@ -376,6 +391,12 @@ func (impl SSOLoginServiceImpl) GetById(id int32) (*bean.SSOLoginDto, error) {
 }
 
 func (impl SSOLoginServiceImpl) GetAll() ([]*bean.SSOLoginDto, error) {
+	if identity, err := lec.DefaultIdentity(); err != nil {
+		return nil, err
+	} else if identity != nil {
+		return []*bean.SSOLoginDto{{Name: "oidc", Label: "LecSSO", Active: true, Url: identity.Config.Origin}}, nil
+	}
+
 	ssoConfigs := make([]*bean.SSOLoginDto, 0)
 
 	models, err := impl.ssoLoginRepository.GetAll()

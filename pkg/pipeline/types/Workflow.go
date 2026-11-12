@@ -45,6 +45,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -347,6 +348,12 @@ func (workflowRequest *WorkflowRequest) getContainerEnvVariables(config *CiCdCon
 	inAppLoggingEnv := v1.EnvVar{Name: "IN_APP_LOGGING", Value: strconv.FormatBool(workflowRequest.InAppLoggingEnabled)}
 	showDockerBuildArgsEnv := v1.EnvVar{Name: "SHOW_DOCKER_BUILD_ARGS", Value: strconv.FormatBool(config.ShowDockerBuildCmdInLogs)}
 	containerEnvVariables = append(containerEnvVariables, eventEnv, inAppLoggingEnv, showDockerBuildArgsEnv)
+	// 构建 Pod 不继承启动平台的 shell；显式传递标准代理及内网直连规则。
+	for _, name := range []string{"HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "http_proxy", "https_proxy", "no_proxy"} {
+		if value := os.Getenv(name); value != "" {
+			containerEnvVariables = append(containerEnvVariables, v1.EnvVar{Name: name, Value: value})
+		}
+	}
 	return containerEnvVariables
 }
 

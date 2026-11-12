@@ -21,6 +21,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/devtron-labs/common-lib/utils/secretScanner"
@@ -69,7 +70,7 @@ func (impl LoggingMiddlewareImpl) LoggingMiddleware(next http.Handler) http.Hand
 		var bodyBuffer bytes.Buffer
 		_, err = io.Copy(&bodyBuffer, r.Body)
 		if err != nil {
-			log.Printf("AUDIT_LOG: error reading request body for urlPath: %s queryParams: %s userEmail: %s", r.URL.Path, r.URL.Query().Encode(), userEmail)
+			log.Printf("AUDIT_LOG: error reading request body for urlPath: %s userEmail: %s", r.URL.Path, userEmail)
 		}
 
 		// Restore the request body for downstream handlers
@@ -99,6 +100,18 @@ func (impl LoggingMiddlewareImpl) LoggingMiddleware(next http.Handler) http.Hand
 	})
 }
 
+// hideCredentialDetails 保留操作审计元数据，身份回调与凭据接口不记录查询或请求正文。
+func hideCredentialDetails(auditLogDto *AuditLoggerDTO) {
+	for _, prefix := range []string{"/orchestrator/auth/", "/orchestrator/login", "/orchestrator/api/dex", "/orchestrator/api/v1/session", "/orchestrator/git/provider", "/orchestrator/docker/registry"} {
+		if strings.HasPrefix(auditLogDto.UrlPath, prefix) {
+			auditLogDto.QueryParams = ""
+			auditLogDto.RequestPayload = []byte("[凭据已隐藏]")
+			return
+		}
+	}
+}
+
 func LogRequest(auditLogDto *AuditLoggerDTO) {
+	hideCredentialDetails(auditLogDto)
 	log.Printf("AUDIT_LOG: clientIp: %s, requestMethod: %s, urlPath: %s, queryParams: %s, updatedBy: %s, updatedOn: %s, apiResponseCode: %d, responseTime: %s, requestPayload: %s", auditLogDto.ClientIp, auditLogDto.RequestMethod, auditLogDto.UrlPath, auditLogDto.QueryParams, auditLogDto.UserEmail, auditLogDto.UpdatedOn, auditLogDto.ApiResponseCode, auditLogDto.ResponseTime, auditLogDto.RequestPayload)
 }

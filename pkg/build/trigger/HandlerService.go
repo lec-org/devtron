@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -876,7 +877,7 @@ func (impl *HandlerServiceImpl) StartCiWorkflowAndPrepareWfRequest(trigger *type
 	}
 	workflowRequest, err = impl.updateWorkflowRequestWithBuildxFlags(workflowRequest, scope)
 	if err != nil {
-		impl.Logger.Errorw("error, updateWorkflowRequestWithBuildxFlags", "workflowRequest", workflowRequest, "err", err)
+		impl.Logger.Errorw("error, updateWorkflowRequestWithBuildxFlags", "pipelineId", pipeline.Id, "err", err)
 		return nil, nil, nil, err
 	}
 	if impl.canSetK8sDriverData(workflowRequest) {
@@ -1025,6 +1026,9 @@ func (impl *HandlerServiceImpl) buildWfRequestForCiPipeline(pipeline *pipelineCo
 			impl.Logger.Errorw("error resolving git material url", "gitMaterialId", ciMaterial.GitMaterial.Id, "err", err)
 			return nil, err
 		}
+		if err := lec.ValidateRepository(gitRepository); err != nil {
+			return nil, err
+		}
 		ciProjectDetail := pipelineConfigBean.CiProjectDetails{
 			GitRepository:   gitRepository,
 			MaterialName:    ciMaterial.GitMaterial.Name,
@@ -1064,6 +1068,21 @@ func (impl *HandlerServiceImpl) buildWfRequestForCiPipeline(pipeline *pipelineCo
 			}
 		}
 
+		if ciMaterial.GitMaterial.GitProvider.Name == lec.GitHubProviderName {
+			app, err := lec.DefaultGitHubApp()
+			if err != nil {
+				return nil, err
+			}
+			if app == nil {
+				return nil, fmt.Errorf("组织 GitHub App 尚未配置")
+			}
+			repo := strings.TrimSuffix(path.Base(gitRepository), ".git")
+			token, err := app.Token(context.Background(), repo)
+			if err != nil {
+				return nil, err
+			}
+			ciProjectDetail.GitOptions.AccessToken = token
+		}
 		ciProjectDetails = append(ciProjectDetails, ciProjectDetail)
 	}
 

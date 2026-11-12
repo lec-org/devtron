@@ -25,6 +25,7 @@ import (
 	userBean "github.com/devtron-labs/devtron/pkg/auth/user/bean"
 	userrepo "github.com/devtron-labs/devtron/pkg/auth/user/repository"
 	util3 "github.com/devtron-labs/devtron/pkg/auth/user/util"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"github.com/devtron-labs/devtron/pkg/sql"
 	"github.com/go-pg/pg"
 	jwtv4 "github.com/golang-jwt/jwt/v4"
@@ -372,6 +373,13 @@ func (impl *UserServiceImpl) GetEmailAndGroupClaimsFromToken(token string) (stri
 	mapClaims, err := impl.getMapClaims(token)
 	if err != nil {
 		return "", nil, err
+	}
+	account, external, identityErr := lec.AccountFromVerifiedClaims(mapClaims)
+	if identityErr != nil {
+		return "", nil, identityErr
+	}
+	if external {
+		return account, nil, nil
 	}
 	groupsClaims := make([]string, 0)
 	email, groups := impl.globalAuthorisationConfigService.GetEmailAndGroupsFromClaims(mapClaims)

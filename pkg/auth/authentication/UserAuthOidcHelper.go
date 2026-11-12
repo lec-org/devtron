@@ -17,6 +17,7 @@
 package authentication
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -24,11 +25,17 @@ import (
 	authMiddleware "github.com/devtron-labs/authenticator/middleware"
 	"github.com/devtron-labs/authenticator/oidc"
 	"github.com/devtron-labs/devtron/pkg/auth/user"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"go.uber.org/zap"
 )
 
+type SSOClient interface {
+	HandleLogin(http.ResponseWriter, *http.Request)
+	HandleCallback(http.ResponseWriter, *http.Request)
+}
+
 type UserAuthOidcHelper interface {
-	GetClientApp() *oidc.ClientApp
+	GetClientApp() SSOClient
 	GetDexProxy() func(writer http.ResponseWriter, request *http.Request)
 	UpdateInMemoryDataOnSsoAddUpdate(ssoUrl string) error
 }
@@ -42,7 +49,7 @@ type UserAuthOidcHelperImpl struct {
 	logger                       *zap.SugaredLogger
 	selfRegistrationRolesService user.UserSelfRegistrationService
 	dexProxy                     func(writer http.ResponseWriter, request *http.Request)
-	clientApp                    *oidc.ClientApp
+	clientApp                    SSOClient
 	dexConfig                    *client.DexConfig
 	settings                     *oidc.Settings
 	sessionManager               *authMiddleware.SessionManager
@@ -57,7 +64,24 @@ func NewUserAuthOidcHelperImpl(logger *zap.SugaredLogger, selfRegistrationRolesS
 		sessionManager:               sessionManager,
 		selfRegistrationRolesService: selfRegistrationRolesService,
 	}
-	logger.Infow("auth starting with dex conf", "conf", dexConfig)
+	identity, err := lec.DefaultIdentity()
+	if err != nil {
+		return nil, err
+	}
+	if identity != nil {
+		// 本地管理员与 API Token 仍使用原签名密钥；SSO Token 改为验证 LecSSO issuer。
+		next := *settings
+		next.URL = identity.Config.Origin + Orchestrator
+		next.OIDCConfig.Issuer = identity.Config.Issuer
+		next.OIDCConfig.ClientID = identity.Config.ClientID
+		next.OIDCConfig.ClientSecret = identity.Config.ClientSecret
+		next.OIDCConfig.RequestedScopes = []string{"openid", "profile"}
+		impl.settings = &next
+		sessionManager.UpdateSettings(&next, &client.DexConfig{DexServerAddress: identity.Config.Issuer})
+		impl.clientApp = lec.NewLoginClient(identity, selfRegistrationRolesService.CheckAndCreateUserIfConfigured)
+		impl.dexProxy = http.NotFound
+		return impl, nil
+	}
 	oidcClient, dexProxy, err := client.GetOidcClient(dexConfig, selfRegistrationRolesService.CheckAndCreateUserIfConfigured, impl.sanitiseRedirectUrl)
 	if err != nil {
 		logger.Errorw("error in getting oidc client", "err", err)
@@ -76,7 +100,7 @@ func (impl UserAuthOidcHelperImpl) sanitiseRedirectUrl(redirectUrl string) strin
 	return redirectUrl
 }
 
-func (impl UserAuthOidcHelperImpl) GetClientApp() *oidc.ClientApp {
+func (impl UserAuthOidcHelperImpl) GetClientApp() SSOClient {
 	return impl.clientApp
 }
 
@@ -85,6 +109,10 @@ func (impl UserAuthOidcHelperImpl) GetDexProxy() func(writer http.ResponseWriter
 }
 
 func (impl UserAuthOidcHelperImpl) UpdateInMemoryDataOnSsoAddUpdate(ssoUrl string) error {
+	if identity, err := lec.DefaultIdentity(); err != nil || identity != nil {
+		return errors.New("LecSSO 配置由平台管理员统一维护")
+	}
+
 	impl.logger.Infow("updating in memory data on sso update", "ssoUrl", ssoUrl)
 
 	// set url in dexConfig
@@ -110,6 +138,6 @@ func (impl UserAuthOidcHelperImpl) UpdateInMemoryDataOnSsoAddUpdate(ssoUrl strin
 	}
 
 	// update client app config
-	impl.clientApp.UpdateConfig(oidcClient)
+	impl.clientApp.(*oidc.ClientApp).UpdateConfig(oidcClient)
 	return nil
 }

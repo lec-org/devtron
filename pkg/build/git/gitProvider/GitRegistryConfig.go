@@ -47,15 +47,17 @@ type GitRegistryConfigImpl struct {
 
 func NewGitRegistryConfigImpl(logger *zap.SugaredLogger, gitProviderRepo repository.GitProviderRepository,
 	GitSensorClient gitSensor.Client) *GitRegistryConfigImpl {
-	return &GitRegistryConfigImpl{
+	impl := &GitRegistryConfigImpl{
 		logger:              logger,
 		gitProviderRepo:     gitProviderRepo,
 		GitSensorGrpcClient: GitSensorClient,
 	}
+	impl.startLecGitHubApp()
+	return impl
 }
 
 func (impl GitRegistryConfigImpl) Create(request *bean2.GitRegistry) (*bean2.GitRegistry, error) {
-	impl.logger.Debugw("get repo create request", "req", request)
+	impl.logger.Debugw("get repo create request", "providerId", request.Id)
 	exist, err := impl.gitProviderRepo.ProviderExists(request.Url)
 	if err != nil {
 		impl.logger.Errorw("error in fetch ", "url", request.Url, "err", err)
@@ -118,20 +120,13 @@ func (impl GitRegistryConfigImpl) Create(request *bean2.GitRegistry) (*bean2.Git
 				UserMessage:     "git provider failed to update in db",
 			}
 		}
-		if len(provider.TlsKey) == 0 && len(provider.TlsCert) == 0 && len(provider.CaCert) == 0 {
-			return nil, &util.ApiError{
-				HttpStatusCode:  http.StatusPreconditionFailed,
-				Code:            constants.GitProviderUpdateRequestIsInvalid,
-				InternalMessage: "git provider failed to update in db",
-				UserMessage:     "git provider failed to update in db",
-			}
-		}
+		// 未上传自定义证书时，Git 仍使用系统 CA 校验公共 HTTPS 服务。
 	}
 
 	provider.SshPrivateKey = securestore.ToEncryptedString(ModifySshPrivateKey(provider.SshPrivateKey.String(), provider.AuthMode))
 	err = impl.gitProviderRepo.Save(provider)
 	if err != nil {
-		impl.logger.Errorw("error in saving git repo config", "data", provider, "err", err)
+		impl.logger.Errorw("error in saving git repo config", "providerId", provider.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.GitProviderCreateFailedInDb,
 			InternalMessage: "git provider failed to create in db",
@@ -141,7 +136,7 @@ func (impl GitRegistryConfigImpl) Create(request *bean2.GitRegistry) (*bean2.Git
 	}
 	err = impl.UpdateGitSensor(provider)
 	if err != nil {
-		impl.logger.Errorw("error in updating git repo config on sensor", "data", provider, "err", err)
+		impl.logger.Errorw("error in updating git repo config on sensor", "providerId", provider.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.GitProviderUpdateFailedInSync,
 			InternalMessage: err.Error(),
@@ -154,7 +149,7 @@ func (impl GitRegistryConfigImpl) Create(request *bean2.GitRegistry) (*bean2.Git
 }
 
 func (impl GitRegistryConfigImpl) Update(request *bean2.GitRegistry) (*bean2.GitRegistry, error) {
-	impl.logger.Debugw("get repo create request", "req", request)
+	impl.logger.Debugw("get repo create request", "providerId", request.Id)
 
 	/*
 		exist, err := impl.gitProviderRepo.ProviderExists(request.RedirectionUrl)
@@ -242,20 +237,13 @@ func (impl GitRegistryConfigImpl) Update(request *bean2.GitRegistry) (*bean2.Git
 				UserMessage:     "git provider failed to update in db",
 			}
 		}
-		if len(provider.TlsKey) == 0 && len(provider.TlsCert) == 0 && len(provider.CaCert) == 0 {
-			return nil, &util.ApiError{
-				HttpStatusCode:  http.StatusPreconditionFailed,
-				Code:            constants.GitProviderUpdateRequestIsInvalid,
-				InternalMessage: "git provider failed to update in db",
-				UserMessage:     "git provider failed to update in db",
-			}
-		}
+		// 未上传自定义证书时，Git 仍使用系统 CA 校验公共 HTTPS 服务。
 	}
 
 	provider.SshPrivateKey = securestore.ToEncryptedString(ModifySshPrivateKey(provider.SshPrivateKey.String(), provider.AuthMode))
 	err := impl.gitProviderRepo.Update(provider)
 	if err != nil {
-		impl.logger.Errorw("error in updating git repo config", "data", provider, "err", err)
+		impl.logger.Errorw("error in updating git repo config", "providerId", provider.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.GitProviderUpdateFailedInDb,
 			InternalMessage: "git provider failed to update in db",
@@ -266,7 +254,7 @@ func (impl GitRegistryConfigImpl) Update(request *bean2.GitRegistry) (*bean2.Git
 	request.Id = provider.Id
 	err = impl.UpdateGitSensor(provider)
 	if err != nil {
-		impl.logger.Errorw("error in updating git repo config on sensor", "data", provider, "err", err)
+		impl.logger.Errorw("error in updating git repo config on sensor", "providerId", provider.Id, "err", err)
 		err = &util.ApiError{
 			Code:            constants.GitProviderUpdateFailedInSync,
 			InternalMessage: err.Error(),
@@ -307,6 +295,15 @@ func (impl GitRegistryConfigImpl) Delete(request *bean2.GitRegistry) error {
 }
 
 func (impl GitRegistryConfigImpl) UpdateGitSensor(provider *repository.GitProvider) error {
+	// Repository 写入时会就地加密字段；重新读取，避免把密文发送给 Git Sensor。
+	if provider.Active {
+		saved, err := impl.gitProviderRepo.FindOne(strconv.Itoa(provider.Id))
+		if err != nil {
+			return err
+		}
+		provider = &saved
+	}
+
 	sensorGitProvider := &gitSensor.GitProvider{
 		Id:                    provider.Id,
 		Name:                  provider.Name,

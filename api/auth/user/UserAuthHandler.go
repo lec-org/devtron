@@ -68,14 +68,14 @@ func (handler UserAuthHandlerImpl) LoginHandler(w http.ResponseWriter, r *http.R
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(up)
 	if err != nil {
-		handler.logger.Errorw("request err, LoginHandler", "err", err, "payload", up)
+		handler.logger.Errorw("request err, LoginHandler", "err", err)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 
 	err = handler.validator.Struct(up)
 	if err != nil {
-		handler.logger.Errorw("validation err, LoginHandler", "err", err, "payload", up)
+		handler.logger.Errorw("validation err, LoginHandler", "err", err)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}

@@ -22,6 +22,7 @@ import (
 	"github.com/devtron-labs/devtron/pkg/auth/user/adapter"
 	"github.com/devtron-labs/devtron/pkg/auth/user/bean"
 	"github.com/devtron-labs/devtron/pkg/auth/user/repository"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
 )
@@ -136,6 +137,19 @@ func (impl *UserSelfRegistrationServiceImpl) SelfRegister(emailId string, groups
 }
 
 func (impl *UserSelfRegistrationServiceImpl) CheckAndCreateUserIfConfigured(claims jwt.MapClaims) bool {
+	account, external, err := lec.AccountFromVerifiedClaims(claims)
+	if err != nil {
+		return false
+	}
+	if external {
+		if impl.userService.UserExists(account) {
+			return true
+		}
+		// 首次登录只建账号；禁用账号不会重启用，发布权限由管理员逐个分配。
+		_, err := impl.userService.SelfRegisterUserIfNotExists(&bean.SelfRegisterDto{UserInfo: &bean.UserInfo{EmailId: account, SuperAdmin: false}})
+		return err == nil || impl.userService.UserExists(account)
+	}
+
 	emailId, groups := impl.globalAuthorisationConfigService.GetEmailAndGroupsFromClaims(claims)
 	impl.logger.Info("check and create user if configured")
 	exists := impl.userService.UserExists(emailId)

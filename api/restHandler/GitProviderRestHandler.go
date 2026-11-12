@@ -37,6 +37,7 @@ import (
 const GIT_ACCOUNT_DELETE_SUCCESS_RESP = "Git account deleted successfully."
 
 type GitProviderRestHandler interface {
+	LecRepositories(w http.ResponseWriter, r *http.Request)
 	SaveGitRepoConfig(w http.ResponseWriter, r *http.Request)
 	GetGitProviders(w http.ResponseWriter, r *http.Request)
 	FetchAllGitProviders(w http.ResponseWriter, r *http.Request)
@@ -87,15 +88,15 @@ func (impl GitProviderRestHandlerImpl) SaveGitRepoConfig(w http.ResponseWriter, 
 	var bean bean.GitRegistry
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, SaveGitRepoConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, SaveGitRepoConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	bean.UserId = userId
-	impl.logger.Infow("request payload, SaveGitRepoConfig", "err", err, "payload", bean)
+	impl.logger.Infow("request payload, SaveGitRepoConfig", "err", err, "configId", bean.Id)
 	err = impl.validator.Struct(bean)
 	if err != nil {
-		impl.logger.Errorw("validation err, SaveGitRepoConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, SaveGitRepoConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -221,15 +222,15 @@ func (impl GitProviderRestHandlerImpl) DeleteGitRepoConfig(w http.ResponseWriter
 	var bean bean.GitRegistry
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, DeleteGitRepoConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, DeleteGitRepoConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	bean.UserId = userId
-	impl.logger.Infow("request payload, DeleteGitRepoConfig", "payload", bean)
+	impl.logger.Infow("request payload, DeleteGitRepoConfig", "configId", bean.Id)
 	err = impl.validator.Struct(bean)
 	if err != nil {
-		impl.logger.Errorw("validation err, DeleteGitRepoConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, DeleteGitRepoConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -242,7 +243,7 @@ func (impl GitProviderRestHandlerImpl) DeleteGitRepoConfig(w http.ResponseWriter
 	//RBAC enforcer Ends
 	err = impl.deleteServiceFullMode.DeleteGitProvider(&bean)
 	if err != nil {
-		impl.logger.Errorw("error in deleting git account", "err", err, "payload", bean)
+		impl.logger.Errorw("error in deleting git account", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}

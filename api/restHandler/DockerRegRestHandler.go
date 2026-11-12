@@ -19,6 +19,7 @@ package restHandler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"net/http"
 	"strings"
 
@@ -202,7 +203,7 @@ func (impl DockerRegRestHandlerImpl) SaveDockerRegistryConfig(w http.ResponseWri
 	var bean types.DockerArtifactStoreBean
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, SaveDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, SaveDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -210,15 +211,15 @@ func (impl DockerRegRestHandlerImpl) SaveDockerRegistryConfig(w http.ResponseWri
 	requestErr := ValidateDockerArtifactStoreRequestBean(bean)
 	if requestErr != nil {
 		err = fmt.Errorf("invalid payload, missing or incorrect values for required fields")
-		impl.logger.Errorw("validation err, SaveDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, SaveDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, requestErr, nil, http.StatusBadRequest)
 		return
 	}
 
-	impl.logger.Infow("request payload, SaveDockerRegistryConfig", "payload", bean)
+	impl.logger.Infow("request payload, SaveDockerRegistryConfig", "configId", bean.Id)
 	err = impl.validator.Struct(bean)
 	if err != nil {
-		impl.logger.Errorw("validation err, SaveDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, SaveDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -240,14 +241,14 @@ func (impl DockerRegRestHandlerImpl) SaveDockerRegistryConfig(w http.ResponseWri
 
 	exist, err := impl.dockerRegistryConfig.CheckInActiveDockerAccount(bean.Id)
 	if err != nil {
-		impl.logger.Errorw("service err, SaveDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("service err, SaveDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
 	if exist {
 		res, err := impl.dockerRegistryConfig.UpdateInactive(&bean)
 		if err != nil {
-			impl.logger.Errorw("service err, UpdateDockerRegistryConfig", "err", err, "payload", bean)
+			impl.logger.Errorw("service err, UpdateDockerRegistryConfig", "err", err, "configId", bean.Id)
 			common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 			return
 		}
@@ -262,7 +263,7 @@ func (impl DockerRegRestHandlerImpl) SaveDockerRegistryConfig(w http.ResponseWri
 
 	res, err := impl.dockerRegistryConfig.Create(&bean)
 	if err != nil {
-		impl.logger.Errorw("service err, SaveDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("service err, SaveDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -301,7 +302,7 @@ func (impl DockerRegRestHandlerImpl) ValidateDockerRegistryConfig(w http.Respons
 	var bean types.DockerArtifactStoreBean
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, ValidateDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, ValidateDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -428,6 +429,14 @@ func (impl DockerRegRestHandlerExtendedImpl) FetchAllDockerAccounts(w http.Respo
 }
 
 func (impl DockerRegRestHandlerImpl) FetchOneDockerAccounts(w http.ResponseWriter, r *http.Request) {
+	// 读取凭据的配置接口仅供平台管理员使用，普通发布成员只使用已绑定的仓库。
+	if identity, err := lec.DefaultIdentity(); err != nil || identity != nil {
+		if err != nil || !impl.enforcer.Enforce(r.Header.Get("token"), casbin.ResourceGlobal, casbin.ActionGet, "*") {
+			common.HandleForbidden(w, r, "docker registry")
+			return
+		}
+	}
+
 	// Use enhanced error response builder
 	errorBuilder := common.NewErrorResponseBuilder(w, r).
 		WithOperation("fetch docker registry").
@@ -455,7 +464,7 @@ func (impl DockerRegRestHandlerImpl) FetchOneDockerAccounts(w http.ResponseWrite
 	// RBAC enforcer applying
 	token := r.Header.Get("token")
 	if ok := impl.enforcer.Enforce(token, casbin.ResourceDocker, casbin.ActionGet, res.Id); !ok {
-		impl.logger.Warnw("Unauthorized access to docker registry", "registryId", id, "userId", token)
+		impl.logger.Warnw("Unauthorized access to docker registry", "registryId", id)
 		common.HandleForbidden(w, r, "docker registry")
 		return
 	}
@@ -465,6 +474,14 @@ func (impl DockerRegRestHandlerImpl) FetchOneDockerAccounts(w http.ResponseWrite
 }
 
 func (impl DockerRegRestHandlerExtendedImpl) FetchOneDockerAccounts(w http.ResponseWriter, r *http.Request) {
+	// 读取凭据的配置接口仅供平台管理员使用，普通发布成员只使用已绑定的仓库。
+	if identity, err := lec.DefaultIdentity(); err != nil || identity != nil {
+		if err != nil || !impl.enforcer.Enforce(r.Header.Get("token"), casbin.ResourceGlobal, casbin.ActionGet, "*") {
+			common.HandleForbidden(w, r, "docker registry")
+			return
+		}
+	}
+
 	params := mux.Vars(r)
 	id := params["id"]
 	res, err := impl.dockerRegistryConfig.FetchOneDockerAccount(id)
@@ -613,15 +630,15 @@ func (impl DockerRegRestHandlerImpl) DeleteDockerRegistryConfig(w http.ResponseW
 	var bean types.DockerArtifactStoreBean
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	bean.User = userId
-	impl.logger.Infow("request payload, DeleteDockerRegistryConfig", "payload", bean)
+	impl.logger.Infow("request payload, DeleteDockerRegistryConfig", "configId", bean.Id)
 	err = impl.validator.Struct(bean)
 	if err != nil {
-		impl.logger.Errorw("validation err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -635,7 +652,7 @@ func (impl DockerRegRestHandlerImpl) DeleteDockerRegistryConfig(w http.ResponseW
 	//RBAC enforcer Ends
 	err = impl.deleteService.DeleteDockerRegistryConfig(&bean)
 	if err != nil {
-		impl.logger.Errorw("service err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("service err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}
@@ -652,15 +669,15 @@ func (impl DockerRegRestHandlerExtendedImpl) DeleteDockerRegistryConfig(w http.R
 	var bean types.DockerArtifactStoreBean
 	err = decoder.Decode(&bean)
 	if err != nil {
-		impl.logger.Errorw("request err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("request err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
 	bean.User = userId
-	impl.logger.Infow("request payload, DeleteDockerRegistryConfig", "payload", bean)
+	impl.logger.Infow("request payload, DeleteDockerRegistryConfig", "configId", bean.Id)
 	err = impl.validator.Struct(bean)
 	if err != nil {
-		impl.logger.Errorw("validation err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("validation err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusBadRequest)
 		return
 	}
@@ -674,7 +691,7 @@ func (impl DockerRegRestHandlerExtendedImpl) DeleteDockerRegistryConfig(w http.R
 	//RBAC enforcer Ends
 	err = impl.deleteServiceFullMode.DeleteDockerRegistryConfig(&bean)
 	if err != nil {
-		impl.logger.Errorw("service err, DeleteDockerRegistryConfig", "err", err, "payload", bean)
+		impl.logger.Errorw("service err, DeleteDockerRegistryConfig", "err", err, "configId", bean.Id)
 		common.WriteJsonResp(w, err, nil, http.StatusInternalServerError)
 		return
 	}

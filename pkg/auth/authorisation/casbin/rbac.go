@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	casbinv2 "github.com/casbin/casbin/v2"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"log"
 	"math"
 	"strings"
@@ -481,7 +482,10 @@ func (e *EnforcerImpl) VerifyTokenAndGetEmail(tokenString string) (string, bool)
 	if err != nil {
 		return "", true
 	}
-	email := jwt.GetField(mapClaims, "email")
+	email, _, identityErr := lec.AccountFromVerifiedClaims(mapClaims)
+	if identityErr != nil {
+		return "", true
+	}
 	sub := jwt.GetField(mapClaims, "sub")
 	if email == "" && (sub == "admin" || sub == "admin:login") {
 		email = "admin"
@@ -501,7 +505,13 @@ func (e *EnforcerImpl) getSubjectsFromToken(tokenString string) ([]string, bool)
 	if err != nil {
 		return nil, true
 	}
-	email := jwt.GetField(mapClaims, "email")
+	email, external, identityErr := lec.AccountFromVerifiedClaims(mapClaims)
+	if identityErr != nil {
+		return nil, true
+	}
+	if external {
+		return []string{email}, false
+	}
 	sub := jwt.GetField(mapClaims, "sub")
 	if email == "" && (sub == "admin" || sub == "admin:login") {
 		email = "admin"

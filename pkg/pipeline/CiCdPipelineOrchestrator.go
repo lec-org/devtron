@@ -38,6 +38,7 @@ import (
 	"github.com/devtron-labs/devtron/pkg/deployment/common"
 	"github.com/devtron-labs/devtron/pkg/deployment/common/read"
 	"github.com/devtron-labs/devtron/pkg/deployment/gitOps/config"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	util4 "github.com/devtron-labs/devtron/pkg/pipeline/util"
 	"github.com/devtron-labs/devtron/pkg/plugin"
 	"github.com/devtron-labs/devtron/pkg/resourceQualifiers"
@@ -1560,6 +1561,9 @@ func (impl CiCdPipelineOrchestratorImpl) resolveGitMaterialUrl(scope resourceQua
 	resolvedUrl, _, err := impl.repoFieldVariableResolver.ResolveRepoFieldValue(scope, url)
 	if err != nil {
 		return "", fmt.Errorf("error resolving git material url: %w", err)
+	}
+	if err := lec.ValidateRepository(resolvedUrl); err != nil {
+		return "", err
 	}
 	return resolvedUrl, nil
 }

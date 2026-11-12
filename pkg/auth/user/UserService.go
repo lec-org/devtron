@@ -19,6 +19,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	"net/http"
 	"strconv"
 	"strings"
@@ -316,6 +317,10 @@ func (impl *UserServiceImpl) saveUser(userInfo *userBean.UserInfo, emailId strin
 }
 
 func (impl *UserServiceImpl) CreateUser(userInfo *userBean.UserInfo, token string, managerAuth func(resource, token string, object string) bool) ([]*userBean.UserInfo, error) {
+	if err := lec.ValidateAccounts(context.Background(), userInfo.EmailId); err != nil {
+		return nil, err
+	}
+
 	var pass []string
 	var userResponse []*userBean.UserInfo
 	emailIds := strings.Split(userInfo.EmailId, ",")
@@ -1332,7 +1337,10 @@ func (impl *UserServiceImpl) GetEmailFromToken(token string) (string, error) {
 		return "", err
 	}
 
-	email := jwt.GetField(mapClaims, "email")
+	email, _, identityErr := lec.AccountFromVerifiedClaims(mapClaims)
+	if identityErr != nil {
+		return "", identityErr
+	}
 	sub := jwt.GetField(mapClaims, "sub")
 
 	if email == "" && (sub == "admin" || sub == "admin:login") {
@@ -1375,7 +1383,10 @@ func (impl *UserServiceImpl) GetEmailAndVersionFromToken(token string) (string, 
 		return "", "", err
 	}
 
-	email := jwt.GetField(mapClaims, "email")
+	email, _, identityErr := lec.AccountFromVerifiedClaims(mapClaims)
+	if identityErr != nil {
+		return "", "", identityErr
+	}
 	sub := jwt.GetField(mapClaims, "sub")
 	tokenVersion := jwt.GetField(mapClaims, "version")
 
