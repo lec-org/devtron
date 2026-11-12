@@ -1081,6 +1081,12 @@ func (impl *HandlerServiceImpl) buildWfRequestForCiPipeline(pipeline *pipelineCo
 			if err != nil {
 				return nil, err
 			}
+			if ciMaterial.Type != constants.SOURCE_TYPE_BRANCH_FIXED {
+				return nil, fmt.Errorf("组织发布流水线需要配置固定分支")
+			}
+			if _, _, err := app.ChangesAfterCommit(context.Background(), repo, ciMaterial.Value, ciProjectDetail.CommitHash, token); err != nil {
+				return nil, err
+			}
 			ciProjectDetail.GitOptions.AccessToken = token
 		}
 		ciProjectDetails = append(ciProjectDetails, ciProjectDetail)

@@ -79,6 +79,7 @@ func (app *GitHubApp) request(ctx context.Context, path, method, token string, p
 	request.Header.Set("Accept", "application/vnd.github+json")
 	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cache-Control", "no-cache")
 	response, err := app.client.Do(request)
 	if err != nil {
 		return errors.New("暂时无法连接 GitHub")

@@ -55,6 +55,7 @@ import (
 	"github.com/devtron-labs/devtron/pkg/deployment/trigger/devtronApps/helper"
 	clientErrors "github.com/devtron-labs/devtron/pkg/errors"
 	k8s2 "github.com/devtron-labs/devtron/pkg/k8s"
+	"github.com/devtron-labs/devtron/pkg/lec"
 	bean8 "github.com/devtron-labs/devtron/pkg/pipeline/bean"
 	"github.com/devtron-labs/devtron/pkg/pipeline/repository"
 	repository6 "github.com/devtron-labs/devtron/pkg/policyGovernance/security/imageScanning/repository"
@@ -412,6 +413,12 @@ func isNotHibernateRequest(deploymentType models.DeploymentType) bool {
 
 // TODO: write a wrapper to handle auto and manual trigger
 func (impl *HandlerServiceImpl) TriggerAutomaticDeployment(request bean.CdTriggerRequest) error {
+	if allowed, err := impl.lecAutomaticArtifactCurrent(request); err != nil {
+		return err
+	} else if !allowed {
+		impl.logger.Infow("已跳过过期提交的自动发布", "artifactId", request.Artifact.Id, "pipelineId", request.Pipeline.Id)
+		return nil
+	}
 	// in case of manual trigger auth is already applied and for auto triggers there is no need for auth check here
 	triggeredBy := request.TriggeredBy
 	pipeline := request.Pipeline
@@ -515,6 +522,60 @@ func (impl *HandlerServiceImpl) TriggerAutomaticDeployment(request bean.CdTrigge
 		return releaseErr
 	}
 	return nil
+}
+
+// 仅约束自动发布：拒绝未合入分支的提交、失败构建和过期代码，显式回滚继续使用原生入口。
+func (impl *HandlerServiceImpl) lecAutomaticArtifactCurrent(request bean.CdTriggerRequest) (bool, error) {
+	app, err := lec.DefaultGitHubApp()
+	if err != nil || app == nil {
+		return app == nil && err == nil, err
+	}
+	artifact := request.Artifact
+	if artifact == nil || artifact.WorkflowId == nil {
+		return false, errors.New("自动发布缺少受信构建记录")
+	}
+	workflow, err := impl.ciWorkflowRepository.FindById(*artifact.WorkflowId)
+	if err != nil {
+		return false, err
+	}
+	if workflow.Status != bean7.SUCCEEDED || workflow.CiPipelineId != artifact.PipelineId {
+		return false, errors.New("自动发布要求原构建全部成功")
+	}
+	materials, err := impl.ciPipelineMaterialRepository.GetByPipelineId(artifact.PipelineId)
+	if err != nil {
+		return false, err
+	}
+	if len(materials) == 0 {
+		return false, errors.New("自动发布缺少代码源")
+	}
+	token, err := app.Token(context.Background(), "")
+	if err != nil {
+		return false, err
+	}
+	for _, material := range materials {
+		if material == nil || material.GitMaterial == nil {
+			return false, errors.New("自动发布代码源不完整")
+		}
+		source, ok := workflow.GitTriggers[material.Id]
+		if !ok || source.CiConfigureSourceValue != material.Value || string(source.CiConfigureSourceType) != "SOURCE_TYPE_BRANCH_FIXED" {
+			return false, nil
+		}
+		if err := lec.ValidateRepository(source.GitRepoUrl); err != nil {
+			return false, err
+		}
+		repo := strings.TrimSuffix(path.Base(source.GitRepoUrl), ".git")
+		paths, complete, err := app.ChangesAfterCommit(context.Background(), repo, material.Value, source.Commit, token)
+		if errors.Is(err, lec.ErrCommitOutsideBranch) {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+		if !complete || lec.HasRelevantChanges(paths, material.GitMaterial.FilterPattern) {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 func (impl *HandlerServiceImpl) TriggerCD(ctx context.Context, artifact *repository3.CiArtifact, cdWorkflowId, wfrId int, pipeline *pipelineConfig.Pipeline, envDeploymentConfig *bean9.DeploymentConfig, triggeredAt time.Time, triggeredBy int32) error {
